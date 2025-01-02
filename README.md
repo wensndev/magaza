@@ -7,12 +7,15 @@ Bu proje, komut satırında çalışan bir mağaza yönetim uygulamasıdır. Yö
     > Elektrik
     > İşlemci (opsiyonel)
 ## Kurulum
-
-1. Gerekli paketleri yükleyin:
+1. Depoyu klonlayın:
+    ```bash
+    git clone https://github.com/wensndev/magaza.git && cd ./magaza
+    ```
+2. Gerekli paketleri yükleyin:
     ```bash
     pip install -r requirements.txt
     ```
-2. Python dosyasını çalıştırın:
+3. Python dosyasını çalıştırın:
     ```bash
     python main.py
     ```

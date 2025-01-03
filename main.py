@@ -34,6 +34,7 @@ sifreDeneme = 0
 
 # yönetici girişi
 def admin_menu():
+    console.clear()
     global sifreDeneme
     if sifreDeneme == 0:
         console.print(Panel("[bold green]Yönetici Menüsü[/]", expand=False))
@@ -42,6 +43,11 @@ def admin_menu():
     # eğer yönetici yoksa, yönetici oluşturulmasını sağlıyoruz
     if len(admin) == 0:
         admcreate = inquirer.prompt([inquirer.Text('password', message="Yönetici şifresi oluşturunuz")])
+        if admcreate['password'] == "":
+            console.print(Panel("[bold red]Şifre boş olamaz![/]", expand=False))
+            time.sleep(2)
+            admin_menu()
+
         db_admins.insert({'username': 'admin', 'password': admcreate['password']})
         console.print(Panel("[bold green]Yönetici şifresi oluşturuldu![/]", expand=False))
         time.sleep(2)
@@ -230,6 +236,15 @@ def register():
     console.print(Panel("[bold green]Kayıt Ol[/]", expand=False))
     username = inquirer.prompt([inquirer.Text('username', message="Kullanıcı adı")])
     password = inquirer.prompt([inquirer.Text('password', message="Şifre")])
+    if username['username'] == "" or password['password'] == "":
+        console.print(Panel("[bold red]Kullanıcı adı ve şifre boş olamaz![/]", expand=False))
+        time.sleep(2)
+        register()
+    user = db_users.search(User.username == username['username'])
+    if user:
+        console.print(Panel("[bold red]Kullanıcı adı zaten mevcut![/]", expand=False))
+        time.sleep(2)
+        register()
     db_users.insert({'username': username['username'], 'password': password['password'], 'orders': []})
     console.print(Panel("[bold green]Kayıt işlemi başarılı![/]", expand=False))
     time.sleep(2)

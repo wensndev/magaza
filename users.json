@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 {"_default": {}}
+=======
+{"_default": {"1": {"username": "sn", "password": "123", "orders": [[{"product": "Telefon", "quantity": "1", "price": 250.0}], [{"product": "PC", "quantity": "1", "price": 500.5}, {"product": "Telefon", "quantity": "3", "price": 750.0}, {"product": "\u0130ndirim", "quantity": "1", "price": "-125.05"}], [{"product": "Telefon", "quantity": "1", "price": 250.0}, {"product": "PC", "quantity": "1", "price": 500.5}, {"product": "Telefon", "quantity": "1", "price": 250.0}, {"product": "\u0130ndirim", "quantity": "1", "price": "-100.05"}]]}}}
+>>>>>>> f3c7820 (Yönetici ve kullanıcı işlemleri için yeni fonksiyonlar ekle, ürün veritabanını güncelle ve sipariş özeti işlevselliğini geliştir.)

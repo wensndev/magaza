@@ -7,7 +7,7 @@ from rich.table import Table
 from rich.panel import Panel
 from tinydb import TinyDB, Query
 
-# isNaN fonksiyonunu tanımlıyoruz
+# isNaN fonksiyonunu tanımlıyoruz (js alışkanlığı)
 def isNaN(value):
     try:
         float(value)
@@ -21,21 +21,25 @@ console = Console()
 # TinyDB veri tabanlarını tanımlıyoruz
 db_products = TinyDB('products.json')
 db_users = TinyDB('users.json')
+db_admins = TinyDB('admins.json')
 Product = Query()
 User = Query()
-db_admins = TinyDB('admins.json')
 Admin = Query()
 
-# yönetici giriş yapma sistemi
+
+# YÖNETİCİ
+
+
 sifreDeneme = 0
 
-
-
+# yönetici girişi
 def admin_menu():
     global sifreDeneme
     if sifreDeneme == 0:
         console.print(Panel("[bold green]Yönetici Menüsü[/]", expand=False))
     admin = db_admins.all()
+
+    # eğer yönetici yoksa, yönetici oluşturulmasını sağlıyoruz
     if len(admin) == 0:
         admcreate = inquirer.prompt([inquirer.Text('password', message="Yönetici şifresi oluşturunuz")])
         db_admins.insert({'username': 'admin', 'password': admcreate['password']})
@@ -81,6 +85,7 @@ def admin_menu_options():
         else:
             main()
 
+# veritabanına ürün ekleme
 def add_product():
     console.clear()
     console.print(Panel("[bold green]Ürün Ekle[/]", expand=False))
@@ -100,6 +105,7 @@ def add_product():
     console.print(Panel("[bold green]Ürün başarıyla eklendi![/]", expand=False))
     admin_menu_options()
 
+# veritabanından ürün silme
 def delete_product():
     console.clear()
     console.print(Panel("[bold green]Ürün Sil[/]", expand=False))
@@ -114,6 +120,7 @@ def delete_product():
     console.print(Panel(f"[bold green]{product_name['name']} başarıyla silindi![/]", expand=False))
     admin_menu_options()
 
+# veritabanındaki ürünleri güncelleme
 def update_product():
     console.clear()
     console.print(Panel("[bold green]Ürün Güncelle[/]", expand=False))
@@ -158,6 +165,7 @@ def update_product():
     else:
         admin_menu_options()
 
+# veritabanındaki ürünleri listeleme
 def list_products():
     console.clear()
     console.print(Panel("[bold green]Ürün Listesi[/]", expand=False))
@@ -176,8 +184,13 @@ def list_products():
     if(menuye_don):
         admin_menu_options()
 
+
+# KULLANICI
+
+
 mevcut_kullanici = ""
 
+# kullanıcı auth menü
 def customer_menu():
     console.clear()
     console.print(Panel("[bold green]Müşteri Menüsü[/]", expand=False))
@@ -189,6 +202,7 @@ def customer_menu():
     else:
         main()
 
+# kullanıcı girişi
 def login():
     console.clear()
     console.print(Panel("[bold green]Giriş Yap[/]", expand=False))
@@ -210,6 +224,18 @@ def login():
         time.sleep(2)
         customer_menu()
 
+# kullanıcı kayıt
+def register():
+    console.clear()
+    console.print(Panel("[bold green]Kayıt Ol[/]", expand=False))
+    username = inquirer.prompt([inquirer.Text('username', message="Kullanıcı adı")])
+    password = inquirer.prompt([inquirer.Text('password', message="Şifre")])
+    db_users.insert({'username': username['username'], 'password': password['password'], 'orders': []})
+    console.print(Panel("[bold green]Kayıt işlemi başarılı![/]", expand=False))
+    time.sleep(2)
+    customer_menu()
+
+# kullanıcı ana menü
 def customer_menu_options():
     console.clear()
     global mevcut_kullanici
@@ -224,6 +250,7 @@ def customer_menu_options():
             mevcut_kullanici = ""
             main()
 
+# sipariş ekleme sistemi
 busiparis = []
 def place_order():
     console.clear()
@@ -245,7 +272,13 @@ def place_order():
         no += 1
     console.print(table)
     
-    urun = inquirer.prompt([inquirer.List('name', message="Ürün seçiniz", choices=[product['name'] for product in products])])
+    product_choices = [product['name'] for product in products]
+    product_choices.append('Çıkış')
+    urun = inquirer.prompt([inquirer.List('name', message="Ürün seçiniz", choices=product_choices)])
+    
+    if urun['name'] == 'Çıkış':
+        customer_menu_options()
+
     adet = inquirer.prompt([inquirer.Text('quantity', message="Adet giriniz")])
     if isNaN(adet['quantity']):
         console.print(Panel("[bold red]Hatalı adet girişi![/]", expand=False))
@@ -276,6 +309,7 @@ def place_order():
     else:
         order_summary(busiparis)
 
+# sipariş özeti gösterme ve veritabanı kayıtları
 def order_summary(siparisler):
     global busiparis
     busiparis = []
@@ -287,13 +321,11 @@ def order_summary(siparisler):
     ntable.add_column("Adet", justify="center")
     ntable.add_column("Birim Fiyat", justify="right")
     ntable.add_column("Toplam", justify="right")
-    
-    # Kullanıcı bilgisini başta alıyoruz
     user = db_users.search(User.username == mevcut_kullanici)[0]
-    
     toplam = 0
     indirim = 0
     no = 1
+
     for siparis in siparisler:
         birim_fiyat = float(siparis['price']) / float(siparis['quantity'])
         adet = int(siparis['quantity'])
@@ -322,22 +354,19 @@ def order_summary(siparisler):
     user_orders = user.get('orders', [])
     user_orders.append(siparisler)
     db_users.update({'orders': user_orders}, User.username == mevcut_kullanici)
-
     console.print(ntable)
     if indirim > 0:
         console.print(Panel(f"[bold cyan]İndirimsiz Tutar: {(toplam + indirim):.2f} TL[/]", expand=False))
         console.print(Panel("[green]Toplam tutar 500 TL üzeri olduğu için %10 indirim uygulanmıştır![/]", expand=False))
     console.print(Panel(f"[bold green]Toplam Tutar: {toplam:.2f} TL[/]", expand=False))
-    
     menuye_don = inquirer.prompt([inquirer.List('don', message="Ana menüye dönmek için Enter'a basınız", choices=['Ana menü'])])
     if menuye_don:
         customer_menu_options()
                       
-
+# eski siparişleri listeleme
 def list_orders():
     console.clear()
     console.print(Panel("[bold green]Siparişlerim[/]", expand=False))
-
     user = db_users.search(User.username == mevcut_kullanici)[0]
     orders = user.get('orders', [])
     
@@ -345,7 +374,6 @@ def list_orders():
         console.print(Panel("[bold red]Sipariş bulunamadı![/]", expand=False))
         time.sleep(2)
         customer_menu_options()
-
     siparis_no = 1
     for siparis_grubu in orders:
         table = Table(title=f"Sipariş #{siparis_no}")
@@ -390,19 +418,8 @@ def list_orders():
     if menuye_don:
         customer_menu_options()
 
-def register():
-    console.clear()
-    console.print(Panel("[bold green]Kayıt Ol[/]", expand=False))
-    
-    username = inquirer.prompt([inquirer.Text('username', message="Kullanıcı adı")])
-    password = inquirer.prompt([inquirer.Text('password', message="Şifre")])
-    
-    # yeni kullanıcıyı TinyDB'ye ekliyoruz
-    db_users.insert({'username': username['username'], 'password': password['password'], 'orders': []})
-    
-    console.print(Panel("[bold green]Kayıt işlemi başarılı![/]", expand=False))
-    time.sleep(2)
-    customer_menu()
+
+
 
 # main fonksiyonunu tanımlıyoruz
 def main():
@@ -425,7 +442,6 @@ def main():
         console.clear()
         console.print(Panel("[bold green]Çıkış yaptınız.[/]", expand=False))
         exit()
-
 
 
 # Programı çalıştırıyoruz

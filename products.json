@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 {"_default": {}}
+=======
+{"_default": {"1": {"name": "PC", "price": "500.5", "adet": "8"}, "2": {"name": "Telefon", "price": "250", "adet": "94"}}}
+>>>>>>> f3c7820 (Yönetici ve kullanıcı işlemleri için yeni fonksiyonlar ekle, ürün veritabanını güncelle ve sipariş özeti işlevselliğini geliştir.)
